@@ -1,10 +1,7 @@
-<?php
-class _file
+<?php class fakeFile extends _file
 {
-    public function exist()
+    public function testunit_verif()
     {
-    }
-    public function write()
-    {
+        return $this->verif();
     }
 }

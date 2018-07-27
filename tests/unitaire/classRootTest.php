@@ -189,8 +189,8 @@ class classRootTest extends PHPUnit_Framework_TestCase
         return array(
             'nullByte1' => array("A\x00B",'AB'),
             'nullByte2' => array("A\0B",'AB'),
-						'antislash' => array('2017\07','2017\07'),
-						'x00' => array('x00','x00'),
+                        'antislash' => array('2017\07','2017\07'),
+                        'x00' => array('x00','x00'),
 
         );
     }
@@ -215,7 +215,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_setParamShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../class_request.php');
 
         //arrange
         $stringParamExpected='val1';
@@ -235,7 +235,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getParamNavShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../class_request.php');
 
         //arrange
         $tParam=array(':nav'=>'default::index');
@@ -257,7 +257,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_setParamNavShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../class_request.php');
 
         //arrange
         $sNavExpected='default::index';
@@ -279,7 +279,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getModuleShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../class_request.php');
 
         //arrange
         $sModuleExpected='default';
@@ -301,7 +301,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getActionShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../class_request.php');
 
         //arrange
         $sActionExpected='index';
@@ -497,7 +497,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getI18nShouldFinishKo()
     {
-				require_once(__DIR__.'/../../tests/inc/fakeDebug.php');
+        require_once(__DIR__.'/../../tests/inc/fakeDebug.php');
 
         //arrange
         $oI18nExpected=new fakeI18n();
@@ -552,7 +552,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_resetRequestShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../class_request.php');
 
         //arrange
         $oExpectedRequest=new _request();
@@ -755,7 +755,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getCacheShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_cache.php');
+        require_once(__DIR__.'/../../class_cache.php');
 
         //arrange
         $oExpectedCache=new _cache();
@@ -771,7 +771,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getCacheVarShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_cacheVar.php');
+        require_once(__DIR__.'/../../class_cacheVar.php');
 
         //arrange
         $oExpectedCacheVar=new _cacheVar();
@@ -835,7 +835,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getLogShouldFinishOk()
     {
-				require_once(__DIR__.'/../../tests/inc/fakeLog.php');
+        require_once(__DIR__.'/../../tests/inc/fakeLog.php');
 
         //arrange
         $oExpectedLog=new fakeLog();
@@ -852,7 +852,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_getLogShouldFinishOk_erreurLog()
     {
-				require_once(__DIR__.'/../../tests/inc/fakeLog.php');
+        require_once(__DIR__.'/../../tests/inc/fakeLog.php');
 
         //arrange
         $oExpectedLog=new fakeLog();
@@ -942,7 +942,7 @@ class classRootTest extends PHPUnit_Framework_TestCase
     */
     public function test_getLinkWithCurrentShouldFinishList($tParam_, $bAmp_, $stringExpected_)
     {
-				require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../class_request.php');
 
         $_GET=array(':nav'=>'default::index','var4'=>'val4');
 
@@ -964,8 +964,8 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_runShouldFinishOk()
     {
-				require_once(__DIR__.'/../../class_request.php');
-				require_once(__DIR__.'/../../tests/inc/fakeLog.php');
+        require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../tests/inc/fakeLog.php');
 
         $tLogExpected=array(
             'module_fake::before()',
@@ -996,8 +996,8 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_runShouldFinishOk_authDev()
     {
-				require_once(__DIR__.'/../../class_request.php');
-				require_once(__DIR__.'/../../tests/inc/fakeLog.php');
+        require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../tests/inc/fakeLog.php');
 
         $tLogExpected=array(
             'module_fake::before()',
@@ -1039,8 +1039,8 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_runShouldFinishOk_auth()
     {
-				require_once(__DIR__.'/../../class_request.php');
-				require_once(__DIR__.'/../../tests/inc/fakeLog.php');
+        require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../tests/inc/fakeLog.php');
 
         $tLogExpected=array(
             'module_fake::before()',
@@ -1077,9 +1077,9 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_runShouldFinishOk_authCache()
     {
-				require_once(__DIR__.'/../../class_request.php');
-				require_once(__DIR__.'/../../tests/inc/fakeFile.php');
-				require_once(__DIR__.'/../../tests/inc/fakeLog.php');
+        require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../tests/inc/class_file.php');
+        require_once(__DIR__.'/../../tests/inc/fakeLog.php');
 
 
         $tLogExpected=array(
@@ -1118,9 +1118,9 @@ class classRootTest extends PHPUnit_Framework_TestCase
 
     public function test_runShouldFinishKoMethodNotFound()
     {
-				require_once(__DIR__.'/../../class_request.php');
-				require_once(__DIR__.'/../../tests/inc/fakeLog.php');
-				require_once(__DIR__.'/../../tests/inc/fakeDebug.php');
+        require_once(__DIR__.'/../../class_request.php');
+        require_once(__DIR__.'/../../tests/inc/fakeLog.php');
+        require_once(__DIR__.'/../../tests/inc/fakeDebug.php');
 
         $tLogExpected=array(
             'module_fake::before()',
