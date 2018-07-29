@@ -1,12 +1,14 @@
 <?php
-require_once(__DIR__.'/../../../../sgbd/syntax/sgbd_syntax_firebird.php');
+require_once(__DIR__.'/../../../../sgbd/syntax/sgbd_syntax_pgsql.php');
+
+
 
 
 /**
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
  */
-class sgbd_syntax_firebirdTest extends PHPUnit_Framework_TestCase
+class sgbd_syntax_pgsqlTest extends PHPUnit_Framework_TestCase
 {
     public function run(PHPUnit_Framework_TestResult $result = null)
     {
@@ -21,14 +23,9 @@ class sgbd_syntax_firebirdTest extends PHPUnit_Framework_TestCase
     public function test_getListColumnShouldFinishOk()
     {
         $sTable='myTable';
-        $sExpectedReturn='select  f.rdb$field_name from rdb$relation_fields f
-		join rdb$relations r on f.rdb$relation_name = r.rdb$relation_name
-		and r.rdb$view_blr is null
-		and (r.rdb$system_flag is null or r.rdb$system_flag = 0)
+        $sExpectedReturn='SELECT column_name FROM information_schema.columns WHERE table_name =\''.$sTable.'\'';
 
-		WHERE f.rdb$relation_name=\''.$sTable.'\' ';
-
-        $oSgbdSyntax=new sgbd_syntax_firebird();
+        $oSgbdSyntax=new sgbd_syntax_pgsql();
 
         $this->assertEquals( $this->trimString($sExpectedReturn), $this->trimString($oSgbdSyntax->getListColumn($sTable)));
     }
@@ -36,14 +33,9 @@ class sgbd_syntax_firebirdTest extends PHPUnit_Framework_TestCase
 		public function test_getStructureShouldFinishOk()
     {
         $sTable='myTable';
-        $sExpectedReturn='select  f.rdb$field_name from rdb$relation_fields f
-				join rdb$relations r on f.rdb$relation_name = r.rdb$relation_name
-				and r.rdb$view_blr is null
-				and (r.rdb$system_flag is null or r.rdb$system_flag = 0)
+        $sExpectedReturn='SELECT column_name,data_type,is_identity FROM information_schema.columns WHERE table_name =\''.$sTable.'\'';
 
-				WHERE f.rdb$relation_name=\''.$sTable.'\' ';
-
-        $oSgbdSyntax=new sgbd_syntax_firebird();
+        $oSgbdSyntax=new sgbd_syntax_pgsql();
 
         $this->assertEquals( $this->trimString($sExpectedReturn), $this->trimString($oSgbdSyntax->getStructure($sTable)));
     }
@@ -51,9 +43,9 @@ class sgbd_syntax_firebirdTest extends PHPUnit_Framework_TestCase
 		public function test_getListTableShouldFinishOk()
     {
         $sTable='myTable';
-        $sExpectedReturn= 'select rdb$relation_name from rdb$relations where rdb$view_blr is null and (rdb$system_flag is null or rdb$system_flag = 0);';
+        $sExpectedReturn= 'SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\'';
 
-        $oSgbdSyntax=new sgbd_syntax_firebird();
+        $oSgbdSyntax=new sgbd_syntax_pgsql();
 
         $this->assertEquals( $this->trimString($sExpectedReturn), $this->trimString($oSgbdSyntax->getListTable($sTable)));
     }
@@ -63,18 +55,18 @@ class sgbd_syntax_firebirdTest extends PHPUnit_Framework_TestCase
         $sRequete='SELECT myField From myTable WHERE myField=N';
 				$iOffset=30;
 				$iLimit=10;
-        $sExpectedReturn= $sRequete.' LIMIT '.$iOffset.','.$iLimit;
+        $sExpectedReturn= $sRequete.' LIMIT '.$iOffset.' OFFSET '.$iLimit;
 
-        $oSgbdSyntax=new sgbd_syntax_firebird();
+        $oSgbdSyntax=new sgbd_syntax_pgsql();
 
         $this->assertEquals( $this->trimString($sExpectedReturn), $this->trimString($oSgbdSyntax->getLimit($sRequete,$iOffset,$iLimit)));
     }
 
 		public function test_getLastInsertIdShouldFinishOk()
     {
-        $sExpectedReturn= 'SELECT LAST_INSERT_ID()';
+        $sExpectedReturn= 'SELECT lastval()';
 
-        $oSgbdSyntax=new sgbd_syntax_firebird();
+        $oSgbdSyntax=new sgbd_syntax_pgsql();
 
         $this->assertEquals( $this->trimString($sExpectedReturn), $this->trimString($oSgbdSyntax->getLastInsertId()));
     }
