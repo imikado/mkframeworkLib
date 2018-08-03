@@ -7,41 +7,55 @@ require_once(__DIR__.'/../../../../sgbd/pdo/sgbd_pdo_mysql.php');
 require_once(__DIR__.'/../../../inc/sgbd/pdo/fakePdoFetch.php');
 
 
-class fakeSgbdPdomysql extends sgbd_pdo_mysql{
+class fakeSgbdPdomysql extends sgbd_pdo_mysql
+{
+    public $testui_willReturnNull=false;
 
-	public function testui_Connect(){
-		$this->connect();
-	}
+    public function testui_Connect()
+    {
+        $this->connect();
+    }
 
-	public function getConfig(){
-		return $this->_sConfig;
-	}
+    public function getConfig()
+    {
+        return $this->_sConfig;
+    }
 
-	public function testui_setPdo($oPdo_){
-		$this->_pDb=$oPdo_;
-	}
+    public function testui_setPdo($oPdo_)
+    {
+        $this->_pDb=$oPdo_;
+    }
 
-	public function query($sRequete_,$tParam_=null){
-		if($sRequete_==sgbd_syntax_mysql::getListColumn('myTable')){
-			return new fakePdoFetch(array(
-				array('myField1'),
-				array('myField2'))
-			);
-		}else if($sRequete_==sgbd_syntax_mysql::getListColumn('myTableEmpty')){
-			return null;
-		}else if($sRequete_==sgbd_syntax_mysql::getListTable()){
-			return new fakePdoFetch(array(
-				array('myTable1'),
-				array('myTable2'))
-			);
-		}
-	}
+    public function query($sRequete_, $tParam_=null)
+    {
+        if ($sRequete_==sgbd_syntax_mysql::getListColumn('myTable')) {
+            return new fakePdoFetch(
+                array(
+                array('myField1'),
+                array('myField2'))
+            );
+        } elseif ($sRequete_==sgbd_syntax_mysql::getListColumn('myTableEmpty')) {
+            return null;
+        } elseif ($sRequete_==sgbd_syntax_mysql::getListTable()) {
+            if ($this->testui_willReturnNull) {
+                return null;
+            } else {
+                return new fakePdoFetch(
+                array(
+                array('myTable1'),
+                array('myTable2'))
+            );
+            }
+        }
+    }
 }
 
-class fakeFirebirdPdo{
-	public function lastInsertId(){
-		return 'lastInsertId';
-	}
+class fakeFirebirdPdo
+{
+    public function lastInsertId()
+    {
+        return 'lastInsertId';
+    }
 }
 
 /**
@@ -56,91 +70,101 @@ class sgbd_pdo_mysqlTest extends PHPUnit_Framework_TestCase
         return parent::run($result);
     }
 
-		private function trimString($sString_){
-			return str_replace(array("\n","\r","\r","\t","\s",' '),'',$sString_);
-		}
+    private function trimString($sString_)
+    {
+        return str_replace(array("\n","\r","\r","\t","\s",' '), '', $sString_);
+    }
 
-		public function test_getListColumnShouldFinishOk(){
-			$oPdo=new fakeSgbdPdomysql();
+    public function test_getListColumnShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdomysql();
 
-			$this->assertEquals(array('myField1','myField2'),$oPdo->getListColumn('myTable'));
+        $this->assertEquals(array('myField1','myField2'), $oPdo->getListColumn('myTable'));
+    }
 
-		}
+    public function test_getListColumnShouldFinishNull()
+    {
+        $oPdo=new fakeSgbdPdomysql();
 
-		public function test_getListColumnShouldFinishNull(){
-			$oPdo=new fakeSgbdPdomysql();
+        $this->assertEquals(null, $oPdo->getListColumn('myTableEmpty'));
+    }
 
-			$this->assertEquals(null,$oPdo->getListColumn('myTableEmpty'));
+    public function test_getListTableShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdomysql();
 
-		}
+        $this->assertEquals(array('myTable1','myTable2'), $oPdo->getListTable());
+    }
 
-		public function test_getListTableShouldFinishOk(){
-			$oPdo=new fakeSgbdPdomysql();
+    public function test_getListTableShouldFinishNull()
+    {
+        $oPdo=new fakeSgbdPdomysql();
+        $oPdo->testui_willReturnNull=true;
+        
+        $this->assertEquals(null, $oPdo->getListTable());
+    }
 
-			$this->assertEquals(array('myTable1','myTable2'),$oPdo->getListTable());
+    public function test_getLastInsertIdShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdomysql();
+        $oPdo->testui_setPdo(new fakeFirebirdPdo());
 
-		}
+        $this->assertEquals('lastInsertId', $oPdo->getLastInsertId());
+    }
 
-		public function test_getLastInsertIdShouldFinishOk(){
-			$oPdo=new fakeSgbdPdomysql();
-			$oPdo->testui_setPdo(new fakeFirebirdPdo());
+    public function test_getWhereAllShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdomysql();
 
-			$this->assertEquals('lastInsertId',$oPdo->getLastInsertId());
-		}
+        $this->assertEquals('1=1', $oPdo->getWhereAll());
+    }
 
-		public function test_getWhereAllShouldFinishOk(){
-			$oPdo=new fakeSgbdPdomysql();
+    public function test_getInstanceShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdomysql();
 
-			$this->assertEquals('1=1',$oPdo->getWhereAll());
-		}
+        $this->assertEquals('1=1', fakeSgbdPdomysql::getInstance('myConfig')->getWhereAll());
+    }
 
-		public function test_getInstanceShouldFinishOk(){
-			$oPdo=new fakeSgbdPdomysql();
+    public function test_connecShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdomysql();
 
-			$this->assertEquals('1=1',fakeSgbdPdomysql::getInstance('myConfig')->getWhereAll() );
-		}
+        $sException=null;
 
-		public function test_connecShouldFinishOk(){
-			$oPdo=new fakeSgbdPdomysql();
+        try {
+            $oPdo->testui_Connect();
+            $oPdo->getPdo();
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
 
-			$sException=null;
+        $this->assertRegexp('/invalid/', $sException);
+    }
 
-			try{
-				$oPdo->testui_Connect();
-				$oPdo->getPdo();
-			}catch(Exception $e){
-				$sException=$e->getMessage();
-			}
+    public function test_getInsertFromTabShouldFinishOk()
+    {
+        $tExpectedResult='(`var1`,`var2`) VALUES (?,?) ';
 
-			$this->assertRegexp('/invalid/',$sException);
+        $tab=array('var1'=>'val1','var2'=>'val2');
 
-		}
+        $oPdo=new fakeSgbdPdomysql();
 
-		public function test_getInsertFromTabShouldFinishOk(){
+        $tProperty=$oPdo->getInsertFromTab($tab);
 
-			$tExpectedResult='(`var1`,`var2`) VALUES (?,?) ';
+        $this->assertEquals($tExpectedResult, $tProperty);
+    }
 
-			$tab=array('var1'=>'val1','var2'=>'val2');
+    public function test_getUpdateFromTabShouldFinishOk()
+    {
+        $tExpectedResult='`var1`=?,`var2`=?';
 
-			$oPdo=new fakeSgbdPdomysql();
+        $tab=array('var1'=>'val1','var2'=>'val2');
 
-			$tProperty=$oPdo->getInsertFromTab($tab);
+        $oPdo=new fakeSgbdPdomysql();
 
-			$this->assertEquals($tExpectedResult,$tProperty);
-		}
+        $tProperty=$oPdo->getUpdateFromTab($tab);
 
-		public function test_getUpdateFromTabShouldFinishOk(){
-			$tExpectedResult='`var1`=?,`var2`=?';
-
-			$tab=array('var1'=>'val1','var2'=>'val2');
-
-			$oPdo=new fakeSgbdPdomysql();
-
-			$tProperty=$oPdo->getUpdateFromTab($tab);
-
-			$this->assertEquals($tExpectedResult,$tProperty);
-		}
-
-
-
+        $this->assertEquals($tExpectedResult, $tProperty);
+    }
 }

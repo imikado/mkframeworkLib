@@ -7,41 +7,65 @@ require_once(__DIR__.'/../../../../sgbd/pdo/sgbd_pdo_pgsql.php');
 require_once(__DIR__.'/../../../inc/sgbd/pdo/fakePdoFetch.php');
 
 
-class fakeSgbdPdopgsql extends sgbd_pdo_pgsql{
+class fakeSgbdPdopgsql extends sgbd_pdo_pgsql
+{
+    public $testui_willReturnNull=false;
 
-	public function testui_Connect(){
-		$this->connect();
-	}
+    public function testui_Connect()
+    {
+        $this->connect();
+    }
 
-	public function getConfig(){
-		return $this->_sConfig;
-	}
+    public function getConfig()
+    {
+        return $this->_sConfig;
+    }
 
-	public function testui_setPdo($oPdo_){
-		$this->_pDb=$oPdo_;
-	}
+    public function testui_setPdo($oPdo_)
+    {
+        $this->_pDb=$oPdo_;
+    }
 
-	public function query($sRequete_,$tParam_=null){
-		if($sRequete_==sgbd_syntax_pgsql::getListColumn('myTable')){
-			return new fakePdoFetch(array(
-				array('myField1'),
-				array('myField2'))
-			);
-		}else if($sRequete_==sgbd_syntax_pgsql::getListColumn('myTableEmpty')){
-			return null;
-		}else if($sRequete_==sgbd_syntax_pgsql::getListTable()){
-			return new fakePdoFetch(array(
-				array('myTable1'),
-				array('myTable2'))
-			);
-		}
-	}
+    public function query($sRequete_, $tParam_=null)
+    {
+        if ($sRequete_==sgbd_syntax_pgsql::getListColumn('myTable')) {
+            return new fakePdoFetch(
+                array(
+                array('myField1'),
+                array('myField2'))
+            );
+        } elseif ($sRequete_==sgbd_syntax_pgsql::getListColumn('myTableEmpty')) {
+            return null;
+        } elseif ($sRequete_==sgbd_syntax_pgsql::getListTable()) {
+            if ($this->testui_willReturnNull) {
+                return null;
+            } else {
+                return new fakePdoFetch(
+                array(
+                array('myTable1'),
+                array('myTable2'))
+            );
+            }
+        } elseif ($sRequete_==sgbd_syntax_pgsql::getLastInsertId()) {
+            if ($this->testui_willReturnNull) {
+                return null;
+            } else {
+                return new fakePdoFetch(
+                    array(
+                        array(33)
+                    )
+                );
+            }
+        }
+    }
 }
 
-class fakePgsqlPdo{
-	public function lastInsertId(){
-		return 'lastInsertId';
-	}
+class fakePgsqlPdo
+{
+    public function lastInsertId()
+    {
+        return 'lastInsertId';
+    }
 }
 
 /**
@@ -56,65 +80,82 @@ class sgbd_pdo_pgsqlTest extends PHPUnit_Framework_TestCase
         return parent::run($result);
     }
 
-		private function trimString($sString_){
-			return str_replace(array("\n","\r","\r","\t","\s",' '),'',$sString_);
-		}
+    private function trimString($sString_)
+    {
+        return str_replace(array("\n","\r","\r","\t","\s",' '), '', $sString_);
+    }
 
-		public function test_getListColumnShouldFinishOk(){
-			$oPdo=new fakeSgbdPdopgsql();
+    public function test_getListColumnShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
 
-			$this->assertEquals(array('myField1','myField2'),$oPdo->getListColumn('myTable'));
+        $this->assertEquals(array('myField1','myField2'), $oPdo->getListColumn('myTable'));
+    }
 
-		}
+    public function test_getListColumnShouldFinishNull()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
 
-		public function test_getListColumnShouldFinishNull(){
-			$oPdo=new fakeSgbdPdopgsql();
+        $this->assertEquals(null, $oPdo->getListColumn('myTableEmpty'));
+    }
 
-			$this->assertEquals(null,$oPdo->getListColumn('myTableEmpty'));
+    public function test_getListTableShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
 
-		}
+        $this->assertEquals(array('myTable1','myTable2'), $oPdo->getListTable());
+    }
 
-		public function test_getListTableShouldFinishOk(){
-			$oPdo=new fakeSgbdPdopgsql();
+    public function test_getListTableShouldFinishNull()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
+        $oPdo->testui_willReturnNull=true;
 
-			$this->assertEquals(array('myTable1','myTable2'),$oPdo->getListTable());
+        $this->assertEquals(null, $oPdo->getListTable());
+    }
 
-		}
+    public function test_getLastInsertIdShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
 
-		public function test_getLastInsertIdShouldFinishOk(){
-			$oPdo=new fakeSgbdPdopgsql();
+        $this->assertEquals(33, $oPdo->getLastInsertId());
+    }
 
-			$this->assertEquals(null,$oPdo->getLastInsertId());
-		}
+    public function test_getLastInsertIdShouldFinishNull()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
+        $oPdo->testui_willReturnNull=true;
 
-		public function test_getWhereAllShouldFinishOk(){
-			$oPdo=new fakeSgbdPdopgsql();
+        $this->assertEquals(null, $oPdo->getLastInsertId());
+    }
 
-			$this->assertEquals('1=1',$oPdo->getWhereAll());
-		}
+    public function test_getWhereAllShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
 
-		public function test_getInstanceShouldFinishOk(){
-			$oPdo=new fakeSgbdPdopgsql();
+        $this->assertEquals('1=1', $oPdo->getWhereAll());
+    }
 
-			$this->assertEquals('1=1',fakeSgbdPdopgsql::getInstance('myConfig')->getWhereAll() );
-		}
+    public function test_getInstanceShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
 
-		public function test_connecShouldFinishOk(){
-			$oPdo=new fakeSgbdPdopgsql();
+        $this->assertEquals('1=1', fakeSgbdPdopgsql::getInstance('myConfig')->getWhereAll());
+    }
 
-			$sException=null;
+    public function test_connecShouldFinishOk()
+    {
+        $oPdo=new fakeSgbdPdopgsql();
 
-			try{
-				$oPdo->testui_Connect();
-				$oPdo->getPdo();
-			}catch(Exception $e){
-				$sException=$e->getMessage();
-			}
+        $sException=null;
 
-			$this->assertRegexp('/invalid/',$sException);
+        try {
+            $oPdo->testui_Connect();
+            $oPdo->getPdo();
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
 
-		}
-
-
-
+        $this->assertRegexp('/invalid/', $sException);
+    }
 }
