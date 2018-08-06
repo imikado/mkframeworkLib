@@ -31,4 +31,8 @@ class fakeSgbd extends abstract_sgbd
     {
         $this->_sReq=$sRequest;
     }
+
+		public function testui_getInstance(){
+			return $this->_getInstance('fakeSgbd',$this->_tConfig);
+		}
 }

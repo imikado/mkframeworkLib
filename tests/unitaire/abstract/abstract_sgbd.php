@@ -1,10 +1,4 @@
 <?php
-
-
-
-
-
-
 /**
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
@@ -195,5 +189,16 @@ class abstract_sgbdTest extends PHPUnit_Framework_TestCase
         $oSgbd->testui_setRequete('myRequest');
 
         $this->assertEquals('myRequest', $oSgbd->getRequete());
+    }
+
+		public function test_getInstanceShouldFinishOk()
+    {
+        require_once(__DIR__.'/../../../abstract/abstract_sgbd.php');
+        require_once(__DIR__.'/../../inc/abstract/fakeSgbd.php');
+
+        $oSgbd=new fakeSgbd();
+        $oUniqSgbd=$oSgbd->testui_getInstance('myRequest');
+
+        $this->assertEquals($oSgbd, $oUniqSgbd);
     }
 }
