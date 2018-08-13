@@ -142,4 +142,49 @@ class classDirTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($bOk, 'errors: '.implode("\n", $tError));
     }
+
+    public function test_saveShouldFinishOk()
+    {
+        $oDir=new _dir('/tmp/newDirTest'.date('YmdHis'));
+
+        $this->assertEquals(false, $oDir->exist());
+
+        $oDir->save();
+
+        $this->assertEquals(true, $oDir->exist());
+
+        $oDir->chmod(0777);
+
+        $oDir->delete();
+
+        $this->assertEquals(false, $oDir->exist());
+    }
+
+    public function test_constructShouldFinishException()
+    {
+        $oDir=new _dir();
+
+        $sException=null;
+        try {
+            $oDir->getName();
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
+
+        $this->assertRegExp('/Adresse du repertoire non defini/', $sException);
+    }
+
+    public function test_constructShouldFinishExceptionNotExist()
+    {
+        $oDir=new _dir('/tmp/notfound');
+
+        $sException=null;
+        try {
+            $oDir->getName();
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
+
+        $this->assertRegExp('/notfound n\'existe pas/', $sException);
+    }
 }

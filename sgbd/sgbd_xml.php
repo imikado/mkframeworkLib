@@ -52,7 +52,7 @@ class sgbd_xml extends abstract_sgbd
     }
     public function execute($tSql)
     {
-        return $this->query($this->bind($tSql));
+       throw new Exception('method execute not available for this driver');
     }
 
     public function update($sTable, $tProperty, $tWhere)
@@ -155,14 +155,16 @@ class sgbd_xml extends abstract_sgbd
             //UTILISATION D UN INDEX
             if ($sIndexToUse!='') {
                 $tObj=$this->findWithTableIndex($sClassRow, $sTable, $sIndexToUse, $tCritere);
-            } elseif ($tSqlFieldEqual==array('=id')) {
+            } elseif ($tSqlFieldEqual==array('id') and substr((string)$tCritere['id'],0,1)=='=') {
                 $sFilename=$this->_tConfig[$this->_sConfig.'.database'];
-                $sFilename.=$sTable.'/'.(string)$tCritere['=id'].'.xml';
+                $sFilename.=$sTable.'/'.substr((string)$tCritere['id'],1).'.xml';
 
-                $tRow=(array)simplexml_load_file($sFilename, null, LIBXML_NOCDATA);
+				if(file_exists($sFilename)){
+					$tRow=(array)simplexml_load_file($sFilename, null, LIBXML_NOCDATA);
 
-                $oRow=new $sClassRow($tRow);
-                $tObj[]=$oRow;
+					$oRow=new $sClassRow($tRow);
+					$tObj[]=$oRow;
+                }
             } else {
                 $tObj=$this->findInTableWithCritere($sClassRow, $sTable, $tCritere);
             }

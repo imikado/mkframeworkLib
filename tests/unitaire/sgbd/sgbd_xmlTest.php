@@ -1,11 +1,10 @@
 Xml<?php
 
 require_once(__DIR__.'/../../inc/abstract/abstract_sgbd.php');
-
-
 require_once(__DIR__.'/../../../sgbd/sgbd_xml.php');
-
 require_once(__DIR__.'/../../inc/sgbd/pdo/fakePdoFetch.php');
+require_once(__DIR__.'/../../inc/sgbd/fakeSgbdXml.php');
+
 
 
 class row_xml
@@ -23,30 +22,6 @@ class row_xml
 }
 
 
-class fakeSgbdXml extends sgbd_xml
-{
-    protected $_sConfig='';
-    protected $_tConfig=array();
-
-    public function testui_Connect()
-    {
-        $this->connect();
-    }
-    public function testui_setConfig($tConfig_)
-    {
-        $this->_tConfig=$tConfig_;
-    }
-
-    public function getConfig()
-    {
-        return $this->_sConfig;
-    }
-
-    public function erreur($sText)
-    {
-        throw new Exception($sText);
-    }
-}
 
 /**
  * @runTestsInSeparateProcesses
@@ -394,5 +369,119 @@ class sgbd_xmlTest extends PHPUnit_Framework_TestCase
         $iExpectedRow=array(3);
 
         $this->assertEquals($iExpectedRow, $iCount);
+    }
+
+    public function test_inserShouldFinishOk()
+    {
+        require_once(__DIR__.'/../../../class_file.php');
+        require_once(__DIR__.'/../../../class_dir.php');
+
+        //preparation
+        $sDbTmp='/tmp/dbXml'.date('YmdHis').'/';
+
+        mkdir($sDbTmp);
+        $sDirTableTmp=$sDbTmp.'myTable';
+        mkdir($sDirTableTmp);
+
+        $sStructureContent='<?xml version="1.0" encoding="UTF-8"?>
+				<structure>
+				<colonne primaire="true">id</colonne>
+				<colonne>titre</colonne>
+
+				</structure>';
+
+        file_put_contents($sDirTableTmp.'/structure.xml', $sStructureContent);
+
+        $sStructureMax='<?xml version="1.0" encoding="ISO-8859-1"?>
+				<main>
+				<max><![CDATA[1]]></max>
+				</main>';
+
+        file_put_contents($sDirTableTmp.'/max.xml', $sStructureMax);
+
+        $oPdo=new fakeSgbdXml();
+        $oPdo->testui_setConfig(array('.database'=>$sDbTmp));
+
+        //--insert
+        $tProperty=array(
+                    'titre'=>'titre 1'
+                );
+        $oPdo->insert('myTable', $tProperty);
+
+
+        $tSql=array('SELECT * FROM myTable  ORDER BY id ASC');
+
+        $tRow=$oPdo->findMany($tSql, 'row_xml');
+
+        $tExpectedRow=array(
+                new row_xml(array('id'=>'1','titre'=>'titre 1')),
+          );
+
+
+        $this->assertEquals($tExpectedRow, $tRow);
+
+        //--update
+        $tPropertyToUpdate=array(
+                    'titre'=>'titre 1 new'
+                );
+
+        $oPdo->update('myTable', $tPropertyToUpdate, array('id'=>1));
+
+        $tRowUpdated=$oPdo->findMany($tSql, 'row_xml');
+
+        $tExpectedRowUpdated=array(
+                new row_xml(array('id'=>'1','titre'=>'titre 1 new')),
+          );
+
+        $this->assertEquals($tExpectedRowUpdated, $tRowUpdated);
+
+        //--delete
+        $oPdo->delete('myTable', array('id'=>1));
+
+        $tPropertyInsertForDelete=array(
+                    'titre'=>'titre 2'
+                );
+        $oPdo->insert('myTable', $tPropertyInsertForDelete);
+
+        $tRowAfterDelete=$oPdo->findMany($tSql, 'row_xml');
+
+        $tExpectedAfterDelete=array(
+                        new row_xml(array('id'=>'2','titre'=>'titre 2')),
+          );
+
+        $this->assertEquals($tExpectedAfterDelete, $tRowAfterDelete);
+
+        unlink($sDirTableTmp.'/structure.xml');
+        unlink($sDirTableTmp.'/max.xml');
+        unlink($sDirTableTmp.'/2.xml');
+        rmdir($sDirTableTmp);
+        rmdir($sDbTmp);
+    }
+    public function test_executeShouldFinishException()
+    {
+        $oPdo=new fakeSgbdXml();
+
+        $sException=null;
+        try {
+            $oPdo->execute(array());
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
+
+        $this->assertRegExp('/method execute not available for this driver/', $sException);
+    }
+
+    public function test_findManyShouldFinishException()
+    {
+        $oPdo=new fakeSgbdXml();
+
+        $sException=null;
+        try {
+            $oPdo->findManySimple(array('SELECT * '), null);
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
+
+        $this->assertRegExp('/Requete non supportee/', $sException);
     }
 }

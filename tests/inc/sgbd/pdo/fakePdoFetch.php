@@ -8,6 +8,8 @@ class fakePdoFetch{
 		$this->tData=$tData_;
 	}
 
+	public function execute(){}
+
 	public function fetch(){
 		$this->i++;
 

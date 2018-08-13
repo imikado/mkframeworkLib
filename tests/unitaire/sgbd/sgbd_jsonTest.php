@@ -6,6 +6,7 @@ require_once(__DIR__.'/../../inc/abstract/abstract_sgbd.php');
 require_once(__DIR__.'/../../../sgbd/sgbd_json.php');
 
 require_once(__DIR__.'/../../inc/sgbd/pdo/fakePdoFetch.php');
+require_once(__DIR__.'/../../inc/sgbd/fakeSgbdJson.php');
 
 
 class row_json
@@ -23,30 +24,6 @@ class row_json
 }
 
 
-class fakeSgbdJson extends sgbd_json
-{
-    protected $_sConfig='';
-    protected $_tConfig=array();
-
-    public function testui_Connect()
-    {
-        $this->connect();
-    }
-    public function testui_setConfig($tConfig_)
-    {
-        $this->_tConfig=$tConfig_;
-    }
-
-    public function getConfig()
-    {
-        return $this->_sConfig;
-    }
-
-    public function erreur($sText)
-    {
-        throw new Exception($sText);
-    }
-}
 
 /**
  * @runTestsInSeparateProcesses
@@ -394,5 +371,113 @@ class sgbd_jsonTest extends PHPUnit_Framework_TestCase
         $iExpectedRow=array(3);
 
         $this->assertEquals($iExpectedRow, $iCount);
+    }
+
+
+    public function test_inserShouldFinishOk()
+    {
+        require_once(__DIR__.'/../../../class_file.php');
+        require_once(__DIR__.'/../../../class_dir.php');
+
+        //preparation
+        $sDbTmp='/tmp/dbJson'.date('YmdHis').'/';
+
+        mkdir($sDbTmp);
+        $sDirTableTmp=$sDbTmp.'myTable';
+        mkdir($sDirTableTmp);
+
+        $sStructureContent='id;titre';
+
+        file_put_contents($sDirTableTmp.'/structure.csv', $sStructureContent);
+
+        $sStructureMax='1';
+
+        file_put_contents($sDirTableTmp.'/max.txt', $sStructureMax);
+
+        $oPdo=new fakeSgbdJson();
+        $oPdo->testui_setConfig(array('.database'=>$sDbTmp));
+
+        //--insert
+        $tProperty=array(
+                    'titre'=>'titre 1'
+                );
+        $oPdo->insert('myTable', $tProperty);
+
+
+        $tSql=array('SELECT * FROM myTable  ORDER BY id ASC');
+
+        $tRow=$oPdo->findMany($tSql, 'row_json');
+
+        $tExpectedRow=array(
+                new row_json(array('id'=>'1','titre'=>'titre 1')),
+          );
+
+
+        $this->assertEquals($tExpectedRow, $tRow);
+
+        //--update
+        $tPropertyToUpdate=array(
+                    'titre'=>'titre 1 new'
+                );
+
+        $oPdo->update('myTable', $tPropertyToUpdate, array('id'=>1));
+
+        $tRowUpdated=$oPdo->findMany($tSql, 'row_json');
+
+        $tExpectedRowUpdated=array(
+                new row_json(array('id'=>'1','titre'=>'titre 1 new')),
+          );
+
+        $this->assertEquals($tExpectedRowUpdated, $tRowUpdated);
+
+        //--delete
+        $oPdo->delete('myTable', array('id'=>1));
+
+        $tPropertyInsertForDelete=array(
+                    'titre'=>'titre 2'
+                );
+        $oPdo->insert('myTable', $tPropertyInsertForDelete);
+
+        $tRowAfterDelete=$oPdo->findMany($tSql, 'row_json');
+
+        $tExpectedAfterDelete=array(
+                        new row_json(array('id'=>'2','titre'=>'titre 2')),
+          );
+
+        $this->assertEquals($tExpectedAfterDelete, $tRowAfterDelete);
+
+        unlink($sDirTableTmp.'/structure.csv');
+        unlink($sDirTableTmp.'/max.txt');
+        unlink($sDirTableTmp.'/2.json');
+        rmdir($sDirTableTmp);
+        rmdir($sDbTmp);
+    }
+
+    public function test_executeShouldFinishException()
+    {
+        $oPdo=new fakeSgbdJson();
+
+        $sException=null;
+        try {
+            $oPdo->execute(array());
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
+
+        $this->assertRegExp('/method execute not available for this driver/', $sException);
+    }
+
+    public function test_findManyShouldFinishException()
+    {
+        $oPdo=new fakeSgbdJson();
+
+        $sException=null;
+        try {
+            $oPdo->findManySimple(array('SELECT * '), null);
+        } catch (Exception $e) {
+            $sException=$e->getMessage();
+        }
+
+        $this->assertRegExp('/Requete non supportee/', $sException);
     }
 }

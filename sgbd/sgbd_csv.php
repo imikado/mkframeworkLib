@@ -47,8 +47,8 @@ class sgbd_csv extends abstract_sgbd{
 		return $this->findOne($tSql,$sClassRow);
 	}
 	public function execute($tSql){
-		return $this->query($this->bind($tSql));
-	}
+       throw new Exception('method execute not available for this driver');
+    }
 
 	public function update($sTable,$tProperty,$tWhere){
 		$iId=$this->getIdFromTab($tWhere);

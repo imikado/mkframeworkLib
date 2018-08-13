@@ -46,7 +46,7 @@ class sgbd_json extends abstract_sgbd{
 		return $this->findOne($tSql,$sClassRow);
 	}
 	public function execute($tSql){
-		return $this->query($this->bind($tSql));
+		throw new Exception('method execute not available for this driver');
 	}
 
 	public function update($sTable,$tProperty,$tWhere){
@@ -153,14 +153,16 @@ class sgbd_json extends abstract_sgbd{
 			if($sIndexToUse!=''){
 				$tObj=$this->findWithTableIndex($sClassRow,$sTable,$sIndexToUse,$tCritere);
 
-			}elseif($tSqlFieldEqual==array('=id')){
+			}elseif($tSqlFieldEqual==array('id') and substr((string)$tCritere['id'],0,1)=='='){
 				$sFilename=$this->_tConfig[$this->_sConfig.'.database'];
-				$sFilename.=$sTable.'/'.(string)$tCritere['=id'].'.json';
+				$sFilename.=$sTable.'/'.substr((string)$tCritere['id'],1).'.json';
 
-				$tRow=(array)$this->json_decode($sFilename);
+				if(file_exists($sFilename)){
+					$tRow=(array)$this->json_decode($sFilename);
 
-				$oRow=new $sClassRow($tRow);
-				$tObj[]=$oRow;
+					$oRow=new $sClassRow($tRow);
+					$tObj[]=$oRow;
+				}
 			}else{
 
 				$tObj=$this->findInTableWithCritere($sClassRow,$sTable,$tCritere);
