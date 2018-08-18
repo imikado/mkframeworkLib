@@ -84,12 +84,6 @@ class _root{
 	*/
 	public static function loadConf(){
 		try{
-			$bConfCacheEnabled=(int)self::getConfigVar('cache.conf.enabled');
-			$sCacheFilename=self::getConfigVar('path.cache').'conf.php';
-			if($bConfCacheEnabled==1 and file_exists($sCacheFilename) ){
-				include $sCacheFilename;
-				return;
-			}
 
 			$tConfigVar=self::$tConfigVar;
 
@@ -110,11 +104,6 @@ class _root{
 
 			self::$tConfigVar=$tConfigVar;
 
-
-			if($bConfCacheEnabled==1){
-				$sCodeCache='<?php _root::$tConfigVar='.var_export(self::$tConfigVar,true).';';
-				file_put_contents($sCacheFilename,$sCodeCache);
-			}
 
 		}catch(Exception $e){
 		      self::erreurLog($e->getMessage()."\n".$e->getTraceAsString());
@@ -183,7 +172,6 @@ class _root{
 		try{
 
 			self::loadConf();
-			self::loadAutoload();
 			self::loadRequest();
 
 			//parametrage du niveau d'erreur
@@ -197,8 +185,6 @@ class _root{
 			self::getLog()->setWarning((int)self::getConfigVar('log.warning'));
 			self::getLog()->setError((int)self::getConfigVar('log.error'));
 			self::getLog()->setApplication((int)self::getConfigVar('log.application'));
-
-
 
 			date_default_timezone_set(self::getConfigVar('site.timezone'));
 			//auth
@@ -352,68 +338,6 @@ class _root{
 		return $result;
 	}
 
-	private function loadAutoload(){
-		if((int)self::getConfigVar('cache.autoload.enabled')==1){
-			$sCacheFilename=self::getConfigVar('path.cache').'autoload.php';
-			if(file_exists($sCacheFilename)){
-				include $sCacheFilename;
-			}else{
-				//on creer un tableau associatif de tous les path des classes
-				$tDir=array(
-					'lib' => self::getConfigVar('path.lib'),
-					'abstract' => self::getConfigVar('path.lib').'abstract/',
-					'sgbd' => self::getConfigVar('path.lib').'sgbd/',
-					'sgbd_pdo' => self::getConfigVar('path.lib').'sgbd/pdo/',
-					'sgbd_syntax' => self::getConfigVar('path.lib').'sgbd/syntax/',
-					'plugin' => self::getConfigVar('path.plugin'),
-					'model' => self::getConfigVar('path.model'),
-					'module' => self::getConfigVar('path.module'),
-				);
-
-				$tAutoload=array();
-
-				foreach($tDir as $sType => $sDir){
-
-					if(in_array($sType,array(
-									'lib',
-									'abstract',
-									'sgbd',
-									'sgbd_pdo',
-									'sgbd_syntax',
-									'plugin',
-									'model',
-					))){
-
-						$oDir=new _dir($sDir);
-
-						$tFile=$oDir->getListFile();
-						foreach($tFile as $oFile){
-							$sFilename=$oFile->getName();
-							$tFilename=preg_split('/_/',$sFilename);
-							if($sType=='lib'){
-								$tAutoload[ '_'.substr($tFilename[1],0,-4) ]=$sDir.$sFilename;
-							}else{
-								$tAutoload[ substr($sFilename,0,-4) ]=$sDir.$sFilename;
-							}
-
-						}
-					}else if($sType=='module'){
-						$oDir=new _dir($sDir);
-
-						$tModuleDir=$oDir->getListDir();
-						foreach($tModuleDir as $oModuleDir){
-							$sModuleDirname=$oModuleDir->getName();
-							$tAutoload['module_'.$sModuleDirname]=$sDir.$sModuleDirname.'/main.php';
-						}
-					}
-				}
-
-				$sCodeCache='<?php _root::$tAutoload='.var_export($tAutoload,true).';';
-				file_put_contents($sCacheFilename,$sCodeCache);
-				self::$tAutoload=$tAutoload;
-			}
-		}
-	}
 
 	/**
 	* appele par le autoload quand il trouve pas une classe (chargement dynamique)
@@ -549,7 +473,10 @@ class _root{
 	* @return _cache
 	*/
 	public static function getCache(){
-		if(self::$_oCache==null){ self::$_oCache=new _cache(); }
+		if(self::$_oCache==null){
+			$sClassCache=self::getConfigVar('cache.class','_cache');
+			self::$_oCache=new $sClassCache;
+		}
 		return self::$_oCache;
 	}
 	/**
@@ -558,7 +485,10 @@ class _root{
 	* @return _cacheVar
 	*/
 	public static function getCacheVar(){
-		if(self::$_oCacheVar==null){ self::$_oCacheVar=new _cacheVar(); }
+		if(self::$_oCacheVar==null){
+			$sClassCacheVar=self::getConfigVar('cacheVar.class','_cacheVar');
+			self::$_oCacheVar=new $sClassCacheVar;
+		}
 		return self::$_oCacheVar;
 	}
 	/**
@@ -611,19 +541,6 @@ class _root{
 	public static function getLog(){
 		if(self::$_oLog==null){
 			$sClassLog=self::getConfigVar('log.class');
-			if($sClassLog==''){
-				$tErreur=array(
-					'Il vous manque un bloc dans votre fichier conf/site.ini',
-					'[log]',
-					'class=plugin_log',
-					'application=1',
-					'warning=1',
-					'error=1',
-					'information=1',
-				);
-
-				self::erreurLog(implode("\n",$tErreur));
-			}
 			self::$_oLog=new $sClassLog;
 		}
 		return self::$_oLog;
@@ -637,16 +554,6 @@ class _root{
 	public static function getI18n(){
 		if(self::$_oI18n==null){
 			$sClassI18n=self::getConfigVar('language.class');
-			if($sClassI18n==''){
-				$tErreur=array(
-					'Il vous manque un bloc dans votre fichier conf/site.ini',
-					'[language]',
-					'class=plugin_sc_i18n',
-
-				);
-
-				self::erreurLog(implode("\n",$tErreur));
-			}
 			self::$_oI18n=new $sClassI18n;
 		}
 		return self::$_oI18n;
