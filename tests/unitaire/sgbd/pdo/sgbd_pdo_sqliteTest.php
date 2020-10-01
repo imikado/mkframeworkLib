@@ -105,7 +105,7 @@ class sgbd_pdo_sqliteTest extends TestCase
 		public function test_connecShouldFinishOk(){
 			$oPdo=new fakeSgbdPdosqlite();
 
-			$sException=null;
+			$sException='null';
 
 			try{
 				$oPdo->testui_Connect();

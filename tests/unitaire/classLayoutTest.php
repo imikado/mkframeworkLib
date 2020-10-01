@@ -121,8 +121,8 @@ class classLayoutTest extends TestCase
         $oLayout=new _layout('layout');
         $oLayout->add('main', $oMoockView);
 
-        $this->assertRegExp('/appel vue/', fakeLog::$tLogInfo[3]);
-        $this->assertRegExp('/myViewPath/', fakeLog::$tLogInfo[3]);
+        $this->assertRegExp('/appel vue/', fakeLog::$tLogInfo[2]);
+        $this->assertRegExp('/myViewPath/', fakeLog::$tLogInfo[2]);
 
         $sView=$oLayout->load('main');
 

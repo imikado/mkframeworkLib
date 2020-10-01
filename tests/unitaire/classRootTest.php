@@ -648,6 +648,8 @@ class classRootTest extends TestCase
             'domain'=>'myDomain',
             'secure'=>false,
             'httponly'=>true,
+            'samesite' => ''
+
         );
 
         $oRoot = new RootToTest();
@@ -680,6 +682,8 @@ class classRootTest extends TestCase
             'domain'=>'myDomain',
             'secure'=>true,
             'httponly'=>true,
+            'samesite' => ''
+
         );
 
         $_SERVER['HTTPS']=1;
