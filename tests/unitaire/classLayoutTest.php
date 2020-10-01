@@ -1,14 +1,15 @@
 <?php
+declare(strict_types=1);
 
-
+use PHPUnit\Framework\TestCase;
 
 /**
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
  */
-class classLayoutTest extends PHPUnit_Framework_TestCase
+class classLayoutTest extends TestCase
 {
-    public function run(PHPUnit_Framework_TestResult $result = null)
+    public function run( $result = null)
     {
         $this->setPreserveGlobalState(false);
         return parent::run($result);
@@ -113,7 +114,7 @@ class classLayoutTest extends PHPUnit_Framework_TestCase
         $oRoot->setConfigVar('path.module', __DIR__.'/../data/module/');
         $oRoot->setConfigVar('path.view', 'view/');
 
-        $oMoockView=$this->getMock('_view');
+        $oMoockView=$this->createMock('_view');
         $oMoockView->method('getPath')->willReturn('myViewPath');
         $oMoockView->method('show')->willReturn('myViewContent');
 
