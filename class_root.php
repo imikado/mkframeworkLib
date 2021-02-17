@@ -190,13 +190,14 @@ class _root{
 			self::getLog()->setApplication((int)self::getConfigVar('log.application'));
 
 			date_default_timezone_set(self::getConfigVar('site.timezone'));
+			
+			if( (int)self::getConfigVar('urlrewriting.enabled') == 1 ){
+				self::getUrlRewriting()->parseUrl($_SERVER['REQUEST_URI']);
+			}
+
 			//auth
 			if( (int)self::getConfigVar('auth.enabled') == 1 ){
 				self::getAuth()->enable();
-			}
-
-			if( (int)self::getConfigVar('urlrewriting.enabled') == 1 ){
-				self::getUrlRewriting()->parseUrl($_SERVER['REQUEST_URI']);
 			}
 
 			$sModuleToLoad=self::getRequest()->getModule();
