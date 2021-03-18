@@ -106,7 +106,7 @@ class _root{
 
 
 		}catch(Exception $e){
-		      self::erreurLog($e->getMessage()."\n".$e->getTraceAsString());
+		      self::erreurLog($e->getMessage()."\n".self::showException($e));
 		}
 	}
 
@@ -190,15 +190,15 @@ class _root{
 			self::getLog()->setApplication((int)self::getConfigVar('log.application'));
 
 			date_default_timezone_set(self::getConfigVar('site.timezone'));
-			
 			if( (int)self::getConfigVar('urlrewriting.enabled') == 1 ){
 				self::getUrlRewriting()->parseUrl($_SERVER['REQUEST_URI']);
 			}
-
+			
 			//auth
 			if( (int)self::getConfigVar('auth.enabled') == 1 ){
 				self::getAuth()->enable();
 			}
+			
 
 			$sModuleToLoad=self::getRequest()->getModule();
 			$sModuleActionToLoad=self::getRequest()->getAction();
@@ -285,6 +285,57 @@ class _root{
 	}
 
 	public static function showException(Exception $e) {
+
+		if(_root::getConfigVar('site.mode','prod') =='dev' ){
+			return self::showDebugException($e);
+		}else{
+			return self::showProductionException($e);
+		}
+
+		
+	}
+
+	public static function getValueIfExist($array_,$key_,$default_=null){
+		if(isset($array_[$key_])){
+			return $array_[$key_];
+		}else{
+			return $default_;
+		}
+	}
+
+	public static function showProductionException(Exception $e){
+		$tTrace = $e->getTrace();
+		$result=null;
+		$result.="\n\nDetails:\n";
+
+		foreach($tTrace as $i=> $trace){
+			$result.='#'.$i.' ';
+			$result.=self::getValueIfExist($trace,'file');
+
+			$result.=' ('.self::getValueIfExist($trace,'line').') '."\n";
+			$result.=' ';
+
+			if(isset($trace['class'])  ){
+				$result.=self::getValueIfExist($trace,'class').' '.self::getValueIfExist($trace,'type').' '.self::getValueIfExist($trace,'function').'( ';
+			}else{
+				$result.=self::getValueIfExist($trace,'function').'( ';
+
+			}
+
+			if(isset($trace['args'])  ){
+				$result.='Arguments hidden: mode!=dev';
+			}
+			
+			$result.=' ) '."\n";
+
+		}
+		$result.='#'.($i+1).' {main}';
+
+
+		return $result;
+	}
+
+	public static function showDebugException(Exception $e){
 		$tTrace = $e->getTrace();
 		$result=$e->getTraceAsString();
 
@@ -319,11 +370,17 @@ class _root{
 
 						if(is_string($arg)){
 							$result.="'$arg'";
+						}else{
+							$result.=preg_replace('/\n|\r/',' ',
+							print_r($arg,1)
+							);
 						}
 					}
 
 				}
 
+			}else if(isset($trace['args']) ){
+				$result.=$trace['args'];
 			}
 			$result.=' ) '."\n";
 
@@ -755,6 +812,8 @@ class _root{
 			}
 		}
 	}
+
+	
 
 
 
