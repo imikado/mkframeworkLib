@@ -286,12 +286,7 @@ class _root{
 
 	public static function showException(Exception $e) {
 
-		if(_root::getConfigVar('site.mode','prod') =='dev' ){
-			return self::showDebugException($e);
-		}else{
-			return self::showProductionException($e);
-		}
-
+		return self::showProductionException($e);
 		
 	}
 
@@ -323,65 +318,9 @@ class _root{
 			}
 
 			if(isset($trace['args'])  ){
-				$result.='Arguments hidden: mode!=dev';
+				$result.='Arguments hidden for security reason';
 			}
 			
-			$result.=' ) '."\n";
-
-		}
-		$result.='#'.($i+1).' {main}';
-
-
-		return $result;
-	}
-
-	public static function showDebugException(Exception $e){
-		$tTrace = $e->getTrace();
-		$result=$e->getTraceAsString();
-
-
-		$result.="\n\nDetail:\n";
-
-		foreach($tTrace as $i=> $trace){
-			$result.='#'.$i.' ';
-			if(isset($trace['file'])){$result.=$trace['file'];}
-			if(isset($trace['line'])){$result.=' ('.$trace['line'].') '."\n";}
-			$result.=' ';
-
-			if(isset($trace['class'])){
-				$result.=$trace['class'].' '.$trace['type'].' '.$trace['function'].'( ';
-			}else{
-				$result.=$trace['function'].'( ';
-
-			}
-
-			if(isset($trace['args']) and is_array($trace['args'])){
-
-				foreach($trace['args'] as $j => $arg){
-
-					if($j>0){ $result.=' , ';}
-
-					if(is_array($arg)){
-						$result.=preg_replace('/\n|\r/',' ',
-							print_r($arg,1)
-						);
-					}else{
-						if(is_null($arg)){ $result.='NULL';}
-
-						if(is_string($arg)){
-							$result.="'$arg'";
-						}else{
-							$result.=preg_replace('/\n|\r/',' ',
-							print_r($arg,1)
-							);
-						}
-					}
-
-				}
-
-			}else if(isset($trace['args']) ){
-				$result.=$trace['args'];
-			}
 			$result.=' ) '."\n";
 
 		}
