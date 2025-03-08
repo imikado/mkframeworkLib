@@ -2,19 +2,17 @@
 	"name": "mkframework/mkframework-lib",
 	"description": "Lib of the mkframework, an easy php framework",
 	"license": "LGPL-3.0-only",
-	"version": "5.1.0",
-	"homepage" : "http://mkframework.com",
+	"version": "5.2.0",
+	"homepage": "http://mkframework.com",
 	"require": {
 		"php": ">=7.2.0"
 	},
-	 "authors": [
-        {
-            "name": "Michael Bertocchi",
-            "homepage": "http://mkframework.com/",
-            "role": "Developer"
-        }
-
-    	],
-
+	"authors": [
+		{
+			"name": "Michael Bertocchi",
+			"homepage": "http://mkframework.com/",
+			"role": "Developer"
+		}
+	],
 	"minimum-stability": "dev"
 }
